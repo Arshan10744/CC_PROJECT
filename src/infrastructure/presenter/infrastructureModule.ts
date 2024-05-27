@@ -10,15 +10,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Jwt2faStrategy } from '../strategies/jwt2fa.stratgey';
 import { JwtStrategy } from '../strategies/jwt.strategy';
-// import { CarController } from './car-presenter/controller';
-// import { CatController } from './cat-presenter/controller';
-// import { GroupController } from './group-presenter/controller';
-// import { DepartmentController } from './department-presenter/controller';
-// import { AuthController } from './auth-presenter/controller';
-// import { JwtModule } from '@nestjs/jwt';
-// import { PassportModule } from '@nestjs/passport';
-// import { JwtStrategy } from '../strategies/auth/jwt.stratgy';
-// import { Jwt2faStrategy } from '../strategies/auth/2fa.jwt.startegy';
 
 @Module({
   imports: [
@@ -50,6 +41,6 @@ import { JwtStrategy } from '../strategies/jwt.strategy';
     AuthController,
   ],
   providers: [Jwt2faStrategy, JwtStrategy],
-  exports: [Jwt2faStrategy,  JwtStrategy],
+  exports: [Jwt2faStrategy, JwtStrategy],
 })
 export class InfrastructureControllerModule {}

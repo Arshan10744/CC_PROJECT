@@ -105,10 +105,6 @@ export class CompanyUseCase {
     throw new NotFoundException('Company Not Found');
   }
 
-  //   // async findByUsername(username: string): Promise<UserDto> {
-  //   //   return this.userRepository.findByUsername(username);
-  //   // }
-
   async getAll(): Promise<Partial<ICompany[]>> {
     return this.companyRepository.getAll();
   }

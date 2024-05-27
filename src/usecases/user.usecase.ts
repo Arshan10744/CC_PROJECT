@@ -128,23 +128,7 @@ export class UserUseCase {
     return this.userRepository.getByCompanyId(id);
   }
 
-  //   // async findByUsername(username: string): Promise<UserDto> {
-  //   //   return this.userRepository.findByUsername(username);
-  //   // }
-
   async getAll(): Promise<Partial<IUser[]>> {
     return this.userRepository.getAll();
   }
-
-  //   async getById(id: string): Promise<Partial<IUser>> {
-  //     return this.userRepository.getById(id);
-  //   }
-
-  //   async getAllByGroup(groupId: string): Promise<IUser[]> {
-  //     return this.userRepository.getAllByGroup(groupId);
-  //   }
-
-  //   async getAllByDepartment(departmentId: string): Promise<IUser[]> {
-  //     return this.userRepository.getAllByDepartment(departmentId);
-  //   }
 }

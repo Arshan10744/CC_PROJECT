@@ -121,7 +121,6 @@ export class UseCaseModule {
             companyRepository: CompanyRepository,
             userRepository: UserRepository,
             siteRepository: SiteRepository,
-            
           ) =>
             new UseCaseProxy(
               new OrganizationUseCase(

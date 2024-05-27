@@ -102,16 +102,4 @@ export class SiteUseCase {
     console.log(company);
     return this.siteRepository.getAllByCompanyId(company.id);
   }
-
-  //   async getById(id: string): Promise<Partial<IUser>> {
-  //     return this.userRepository.getById(id);
-  //   }
-
-  //   async getAllByGroup(groupId: string): Promise<IUser[]> {
-  //     return this.userRepository.getAllByGroup(groupId);
-  //   }
-
-  //   async getAllByDepartment(departmentId: string): Promise<IUser[]> {
-  //     return this.userRepository.getAllByDepartment(departmentId);
-  //   }
 }

@@ -36,12 +36,4 @@ export class AuthController {
     const user = req.user;
     return this.authUseCase.getInstance().verifyToken(token, user);
   }
-
-  // @UseGuards(Jwt2FaAuthGuard)
-  // @Post('/verifyToken/:token')
-  // async verify(@Param('token') token: string, @Req() req): Promise<string> {
-  //   const user = req.user;
-  //   console.log(user);
-  //   return this.authUseCase.getInstance().verifyToken(token, user);
-  // }
 }

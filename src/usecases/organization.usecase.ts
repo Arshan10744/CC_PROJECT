@@ -19,15 +19,12 @@ export class OrganizationUseCase {
     private readonly siteService: SiteRepository,
   ) {}
 
-
   async create(payload: OrganizationDto) {
     let { company, users, sites, ...organizationPayload } = payload;
 
     let CompanyValue;
     let UsersValue;
     let SitesValue;
-
-    
 
     if (users && users.length > 0) {
       UsersValue = await Promise.all(
@@ -58,19 +55,18 @@ export class OrganizationUseCase {
       if (!existingCompany) {
         throw new NotFoundException('company not found');
       }
-      //   console.log(existingGroup);
       CompanyValue = { id: existingCompany.id };
 
-      if(UsersValue.length == 0){
-        console.log("I am inside this iffff.......................")
+      if (UsersValue.length == 0) {
+        console.log('I am inside this iffff.......................');
         const users = await this.userService.getByCompanyId(existingCompany.id);
         console.log(users);
-        const adminUsers = users.filter((user)=>{
-        return user.role == "admin"
-      });
-      console.log(adminUsers)
+        const adminUsers = users.filter((user) => {
+          return user.role == 'admin';
+        });
+        console.log(adminUsers);
         UsersValue = adminUsers;
-        console.log("Inside iffffffffffffffff.............",UsersValue)
+        console.log('Inside iffffffffffffffff.............', UsersValue);
       }
     } else {
       CompanyValue = null;
@@ -150,23 +146,7 @@ export class OrganizationUseCase {
     throw new NotFoundException('organization Not Found');
   }
 
-  //   // async findByUsername(username: string): Promise<UserDto> {
-  //   //   return this.userRepository.findByUsername(username);
-  //   // }
-
   async getAll(): Promise<Partial<IOrganization[]>> {
     return this.organizationRepository.getAll();
   }
-
-  //   async getById(id: string): Promise<Partial<IUser>> {
-  //     return this.userRepository.getById(id);
-  //   }
-
-  //   async getAllByGroup(groupId: string): Promise<IUser[]> {
-  //     return this.userRepository.getAllByGroup(groupId);
-  //   }
-
-  //   async getAllByDepartment(departmentId: string): Promise<IUser[]> {
-  //     return this.userRepository.getAllByDepartment(departmentId);
-  //   }
 }

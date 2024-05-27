@@ -61,12 +61,4 @@ export class SiteController {
   async getAllByCompanyId(@Param('id') id: string): Promise<ISite[]> {
     return this.siteUseCase.getInstance().getAllByCompanyId(id);
   }
-
-  // @UseGuards(Jwt2FaAuthGuard)
-  // @Post('/verifyToken/:token')
-  // async verify(@Param('token') token: string, @Req() req): Promise<string> {
-  //   const user = req.user;
-  //   console.log(user);
-  //   return this.authUseCase.getInstance().verifyToken(token, user);
-  // }
 }

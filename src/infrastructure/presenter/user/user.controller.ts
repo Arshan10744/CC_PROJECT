@@ -54,11 +54,4 @@ export class UserController {
   async getAllByCompanyId(@Param('id') id: string): Promise<IUser[]> {
     return this.userUseCase.getInstance().getByCompanyId(id);
   }
-  // @UseGuards(Jwt2FaAuthGuard)
-  // @Post('/verifyToken/:token')
-  // async verify(@Param('token') token: string, @Req() req): Promise<string> {
-  //   const user = req.user;
-  //   console.log(user);
-  //   return this.authUseCase.getInstance().verifyToken(token, user);
-  // }
 }
