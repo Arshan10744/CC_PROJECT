@@ -13,6 +13,7 @@ import { AuthRepository } from './auth.repository';
 import { JwtTokenService } from 'src/infrastructure/services/jwt.service';
 import { QrcodeService } from 'src/infrastructure/services/qrcode.service';
 import { SpeakeasyService } from 'src/infrastructure/services/speakeasy.service';
+import { CaslAbilityFactory } from 'src/infrastructure/services/ability.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([users, organizations, companies, sites])],
@@ -26,6 +27,7 @@ import { SpeakeasyService } from 'src/infrastructure/services/speakeasy.service'
     JwtTokenService,
     QrcodeService,
     SpeakeasyService,
+    CaslAbilityFactory,
   ],
   exports: [
     UserRepository,
@@ -37,6 +39,7 @@ import { SpeakeasyService } from 'src/infrastructure/services/speakeasy.service'
     JwtTokenService,
     QrcodeService,
     SpeakeasyService,
+    CaslAbilityFactory,
   ],
 })
 export class RepositoriesModule {}

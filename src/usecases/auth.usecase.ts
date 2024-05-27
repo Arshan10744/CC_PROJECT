@@ -94,22 +94,6 @@ export class AuthUseCase {
       username: user.username,
       email: user.email,
     };
-
-    // const { otpauthUrl } = this.qrCodeService.getSecret();
-
-    // // No need to save the secret in the user's record anymore
-
-    // const qrCodeUrl = await this.qrCodeService.generateQRCode(otpauthUrl);
-
-    // return {
-    //   version: 'This token is for 2FA',
-    //   access_token: this.jwtTokenService.createToken(
-    //     jwtPayload,
-    //     this.configService.get('JWT_SECRET_2FA'),
-    //     this.configService.get('JWT_EXPIRATION_TIME_2FA'),
-    //   ),
-    //   qrCodeUrl: qrCodeUrl
-    // };
   }
 
   async verifyToken(token: string, userPayload: Partial<users>): Promise<any> {

@@ -48,6 +48,7 @@ export class UserRepository implements IUserRepository {
     return this.userRepository.find({
       where: { company: { id: id } },
       select: ['username', 'email', 'role'],
+      relations: { organizations: true, company: true },
     });
   }
 

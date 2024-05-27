@@ -9,7 +9,6 @@ import { organizations } from 'src/infrastructure/orm/entities/organization.enti
 import { IOrganization } from 'src/domain/models/organization';
 import { UserRepository } from 'src/infrastructure/orm/repositories/user.repository';
 import { SiteRepository } from 'src/infrastructure/orm/repositories/site.repository';
-import { UserRole } from 'src/infrastructure/utilities/enums';
 
 export class OrganizationUseCase {
   constructor(
@@ -18,13 +17,12 @@ export class OrganizationUseCase {
     private readonly userService: UserRepository,
     private readonly siteService: SiteRepository,
   ) {}
-
   async create(payload: OrganizationDto) {
     let { company, users, sites, ...organizationPayload } = payload;
 
     let CompanyValue;
-    let UsersValue;
-    let SitesValue;
+    let UsersValue = [];
+    let SitesValue = [];
 
     if (users && users.length > 0) {
       UsersValue = await Promise.all(
@@ -48,7 +46,7 @@ export class OrganizationUseCase {
       SitesValue = [];
     }
 
-    if (company !== undefined) {
+    if (company !== undefined && company != '') {
       const existingCompany = await this.companyRepository.getById(
         company.toString(),
       );
@@ -77,9 +75,11 @@ export class OrganizationUseCase {
     return await this.organizationRepository.create({
       company: CompanyValue,
       users: UsersValue,
+      sites: SitesValue,
       ...organizationPayload,
     });
   }
+
   async update(
     payload: Partial<UpdateOrganizationDto>,
     id: string,

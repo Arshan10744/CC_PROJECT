@@ -10,6 +10,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Jwt2faStrategy } from '../strategies/jwt2fa.stratgey';
 import { JwtStrategy } from '../strategies/jwt.strategy';
+import { AbilitiesGuard } from '../guard/casl/abilities.guard';
+import { CaslAbilityFactory } from '../services/ability.service';
 
 @Module({
   imports: [
@@ -40,7 +42,7 @@ import { JwtStrategy } from '../strategies/jwt.strategy';
     CompanyController,
     AuthController,
   ],
-  providers: [Jwt2faStrategy, JwtStrategy],
-  exports: [Jwt2faStrategy, JwtStrategy],
+  providers: [Jwt2faStrategy, JwtStrategy, AbilitiesGuard, CaslAbilityFactory],
+  exports: [Jwt2faStrategy, JwtStrategy, AbilitiesGuard, CaslAbilityFactory],
 })
 export class InfrastructureControllerModule {}
