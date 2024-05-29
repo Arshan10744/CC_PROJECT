@@ -37,7 +37,7 @@ export class UserUseCase {
         companyValue = null;
       }
 
-      if (organizations) {
+      if (organizations?.length) {
         organizationsValue = await Promise.all(
           organizations.map(
             async (id) => await this.organizationService.getById(id),
@@ -80,7 +80,7 @@ export class UserUseCase {
         companyValue = null;
       }
 
-      if (organizations) {
+      if (organizations?.length) {
         organizationsValue = await Promise.all(
           organizations.map(
             async (id) => await this.organizationService.getById(id),
@@ -114,7 +114,6 @@ export class UserUseCase {
       let updatePayload: Partial<users> = { ...userPayload };
 
       if (company !== undefined && company !== '') {
-        console.log('checked for undfiend and null');
         const existingCompany = await this.companyService.getById(
           company?.toString(),
         );

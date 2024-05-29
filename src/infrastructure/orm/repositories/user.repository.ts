@@ -83,6 +83,9 @@ export class UserRepository implements IUserRepository {
         skip: (pageNumber - 1) * pageSize,
         relations: { company: true, organizations: true },
         select: {
+          id: true,
+          username: true,
+          email: true,
           company: {
             id: true,
             name: true,

@@ -8,11 +8,11 @@ export class SpeakeasyService implements ISpeakeasy {
   constructor(private readonly configService: ConfigService) {}
 
   getSecret(): { secret: any } {
-    const genericSecret = this.configService.get<string>('GENERIC_SECRET');
+    const SpeakeasySecret = this.configService.get<string>('SPEAKEASY_SECRET');
     return {
       secret: {
         otpauthUrl: speakeasy.otpauthURL({
-          secret: genericSecret,
+          secret: SpeakeasySecret,
           label: 'CC_PROJECT',
           encoding: 'base32',
         }),
@@ -21,7 +21,7 @@ export class SpeakeasyService implements ISpeakeasy {
   }
   async verifyToken(token: string): Promise<boolean> {
     const isVerified = speakeasy.totp.verify({
-      secret: this.configService.get('GENERIC_SECRET'),
+      secret: this.configService.get('SPEAKEASY_SECRET'),
       encoding: 'base32',
       token,
     });

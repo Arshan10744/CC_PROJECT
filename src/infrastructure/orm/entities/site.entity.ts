@@ -1,4 +1,4 @@
-import { ManyToMany, ManyToOne } from 'typeorm';
+import {  ManyToOne } from 'typeorm';
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { organizations } from './organization.entity';
 @Entity('sites')

@@ -1,4 +1,3 @@
-import { organizations } from 'src/infrastructure/orm/entities/organization.entity';
 import {
   Injectable,
   InternalServerErrorException,

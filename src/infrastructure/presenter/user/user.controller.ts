@@ -83,6 +83,7 @@ export class UserController {
 
   @UseGuards(AbilitiesGuard)
   @CheckAbilities({ action: Action.Read, subjects: users })
+  @UseGuards(AuthGuard('jwt'))
   @Get('/paginated')
   async getPaginatedUser(@Query() query: PaginationDto) {
     return this.userUseCase

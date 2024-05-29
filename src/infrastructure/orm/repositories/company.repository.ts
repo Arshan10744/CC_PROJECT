@@ -5,9 +5,6 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository, UpdateResult } from 'typeorm';
-import { IUserRepository } from 'src/domain/repositories/user.inerface';
-import { users } from '../entities/user.entity';
-import { IUser } from 'src/domain/models/user';
 import { ICompanyRepository } from 'src/domain/repositories/company.interface';
 import { companies } from '../entities/comapny.entity';
 import { ICompany } from 'src/domain/models/company';

@@ -1,4 +1,3 @@
-import { organizations } from 'src/infrastructure/orm/entities/organization.entity';
 import { NotFoundException } from '@nestjs/common';
 import { DeleteResult, UpdateResult } from 'typeorm';
 import { OrganizationRepository } from 'src/infrastructure/orm/repositories/organization.repository';
@@ -109,7 +108,6 @@ export class SiteUseCase {
       if (!company) {
         throw new NotFoundException('company Not Found');
       }
-      console.log(company);
       return this.siteRepository.getAllByCompanyId(company.id);
     } catch (error) {
       return error;

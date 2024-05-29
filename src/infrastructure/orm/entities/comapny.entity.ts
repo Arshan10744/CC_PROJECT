@@ -2,9 +2,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  OneToMany,
-  ManyToMany,
-  JoinTable,
+  OneToMany
 } from 'typeorm';
 import { users } from './user.entity';
 import { organizations } from './organization.entity';

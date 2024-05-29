@@ -25,7 +25,7 @@ export class OrganizationUseCase {
       let UsersValue = [];
       let SitesValue = [];
 
-      if (users && users.length > 0) {
+      if (users?.length) {
         UsersValue = await Promise.all(
           users.map(async (id) => await this.userService.getById(id)),
         );
@@ -34,7 +34,7 @@ export class OrganizationUseCase {
         }
       }
 
-      if (sites && sites.length > 0) {
+      if (sites?.length) {
         SitesValue = await Promise.all(
           sites.map(async (id) => await this.siteService.getById(id)),
         );
@@ -56,21 +56,14 @@ export class OrganizationUseCase {
           const companyUsers = await this.userService.getByCompanyId(
             existingCompany.id,
           );
-          console.log('users of the company-----', companyUsers);
           const adminUsers = companyUsers.filter(
             (user) => user.role === 'admin',
           );
-          console.log('admin users of the company-----', adminUsers);
           UsersValue = adminUsers;
         }
       } else {
         CompanyValue = null;
       }
-
-      console.log(
-        'Users Value Before Setting it into the payload-----',
-        UsersValue,
-      );
 
       return this.organizationRepository.create({
         company: CompanyValue,
@@ -88,7 +81,6 @@ export class OrganizationUseCase {
     id: string,
   ): Promise<UpdateResult> {
     try {
-      console.log(payload);
       const { company, users, sites, ...organizationPayload } = payload;
 
       let updatePayload: Partial<organizations> = { ...organizationPayload };
@@ -138,7 +130,6 @@ export class OrganizationUseCase {
       if (isEmptyObject(updatePayload)) {
         return;
       }
-      console.log(updatePayload);
       return await this.organizationRepository.update(updatePayload, id);
     } catch (error) {
       return error.message;

@@ -1,4 +1,3 @@
-import { users } from 'src/infrastructure/orm/entities/user.entity';
 import { NotFoundException } from '@nestjs/common';
 import { ICompany } from 'src/domain/models/company';
 import { CompanyRepository } from 'src/infrastructure/orm/repositories/company.repository';
@@ -24,7 +23,7 @@ export class CompanyUseCase {
       let organizationsValue = [];
       let usersValue = [];
 
-      if (organizations) {
+      if (organizations?.length) {
         organizationsValue = await Promise.all(
           organizations.map(
             async (id) => await this.organizationService.getById(id),
@@ -35,7 +34,7 @@ export class CompanyUseCase {
         }
       }
 
-      if (users) {
+      if (users?.length) {
         usersValue = await Promise.all(
           users.map(async (id) => await this.userService.getById(id)),
         );
@@ -56,6 +55,7 @@ export class CompanyUseCase {
   }
 
   async update(payload: UpdateCompanyDto, id: string) {
+    console.log(payload);
     try {
       const { users, organizations, ...companyPayload } = payload;
 
@@ -91,6 +91,8 @@ export class CompanyUseCase {
           users: usersValue,
         });
       }
+     
+      console.log(updatePayload);
 
       if (isEmptyObject(updatePayload)) {
         return;

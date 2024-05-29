@@ -23,7 +23,6 @@ export class AuthUseCase {
   async validate(payload: AuthDto): Promise<any> {
     try {
       const { email, password } = payload;
-      console.log(email, password);
       const user = await this.authRepository.validate(email);
 
       if (!user) {
@@ -78,7 +77,6 @@ export class AuthUseCase {
   async validate2FA(payload: AuthDto): Promise<any> {
     try {
       const { email, password } = payload;
-      console.log(email, password);
       const user = await this.authRepository.validate(email);
 
       if (!user) {
