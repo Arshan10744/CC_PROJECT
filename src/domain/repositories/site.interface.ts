@@ -9,4 +9,5 @@ export interface ISiteRepository {
   getById(id: string): Promise<ISite>;
   getAllByOrganizationId(id: string): Promise<ISite[]>;
   getAllByCompanyId(id: string): Promise<ISite[]>;
+  getPaginatedSites(pageNumber: number, pageSize: number): Promise<ISite[]>;
 }

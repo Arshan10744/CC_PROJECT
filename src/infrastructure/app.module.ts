@@ -12,6 +12,5 @@ import { ConfigModule } from '@nestjs/config';
 
     InfrastructureControllerModule,
   ],
-  // providers: [InfrastructureControllerModule],
 })
 export class AppModule {}

@@ -7,4 +7,8 @@ export interface IOrganizationRepository {
   getAll(): Promise<IOrganization[]>;
   update(payload: Partial<IOrganization>, id: string): Promise<UpdateResult>;
   getById(id: string): Promise<IOrganization>;
+  getPaginatedOrganizations(
+    pageNumber: number,
+    pageSize: number,
+  ): Promise<IOrganization[]>;
 }

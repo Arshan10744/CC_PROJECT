@@ -1,5 +1,9 @@
 import { organizations } from 'src/infrastructure/orm/entities/organization.entity';
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository, UpdateResult } from 'typeorm';
 import { ISiteRepository } from 'src/domain/repositories/site.interface';
@@ -14,7 +18,8 @@ export class SiteRepository implements ISiteRepository {
   ) {}
 
   async create(payload: Partial<sites>): Promise<string> {
-    await this.siteRepository.save(payload);
+    const site = this.siteRepository.create(payload);
+    await this.siteRepository.save(site);
     return 'site Created Successfully';
   }
 
@@ -54,5 +59,35 @@ export class SiteRepository implements ISiteRepository {
 
   async getById(id: string): Promise<sites> {
     return this.siteRepository.findOneBy({ id });
+  }
+
+  async getPaginatedSites(
+    pageNumber: number,
+    pageSize: number,
+  ): Promise<ISite[]> {
+    try {
+      const sites = await this.siteRepository.find({
+        take: pageSize,
+        skip: (pageNumber - 1) * pageSize,
+        relations: { organization: true },
+        select: {
+          organization: {
+            id: true,
+            name: true,
+          },
+        },
+      });
+
+      if (sites.length === 0) {
+        throw new NotFoundException('No sites found for the provided page');
+      }
+
+      return sites;
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Failed to fetch sites',
+        error.message,
+      );
+    }
   }
 }

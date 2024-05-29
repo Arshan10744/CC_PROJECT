@@ -19,116 +19,184 @@ export class UserUseCase {
   ) {}
 
   async create(payload: UserDto) {
-    let { organizations, company, ...userPayload } = payload;
+    try {
+      let { organizations, company, ...userPayload } = payload;
 
-    let companyValue;
-    let organizationsValue;
+      let companyValue;
+      let organizationsValue = [];
 
-    if (company !== undefined) {
-      const existingCompany = await this.companyService.getById(
-        company.toString(),
-      );
-      if (!existingCompany) {
-        throw new NotFoundException('Company not found');
+      if (company !== undefined && company !== '') {
+        const existingCompany = await this.companyService.getById(
+          company.toString(),
+        );
+        if (!existingCompany) {
+          throw new NotFoundException('Company not found');
+        }
+        companyValue = { id: existingCompany.id };
+      } else {
+        companyValue = null;
       }
-      //   console.log(existingGroup);
-      companyValue = { id: existingCompany.id };
-    } else {
-      companyValue = null;
-    }
 
-    if (organizations) {
-      organizationsValue = await Promise.all(
-        organizations.map(
-          async (id) => await this.organizationService.getById(id),
-        ),
-      );
-      if (organizationsValue.some((organization) => !organization)) {
-        throw new NotFoundException('One or more organization not found');
+      if (organizations) {
+        organizationsValue = await Promise.all(
+          organizations.map(
+            async (id) => await this.organizationService.getById(id),
+          ),
+        );
+        if (organizationsValue.some((organization) => !organization)) {
+          throw new NotFoundException('One or more organization not found');
+        }
       }
-    } else {
-      organizationsValue = [];
-    }
-    const hash = await this.bcryptService.hash(payload.password);
-    userPayload.password = hash;
 
-    // console.log(departmentsValue, groupValue, userPayload);
-    return await this.userRepository.create({
-      company: companyValue,
-      organizations: organizationsValue,
-      ...userPayload,
-    });
+      const hash = await this.bcryptService.hash(payload.password);
+      userPayload.password = hash;
+
+      return await this.userRepository.create({
+        company: companyValue,
+        organizations: organizationsValue,
+        ...userPayload,
+      });
+    } catch (error) {
+      return error.message;
+    }
   }
+
+  async signUp(payload: Partial<UserDto>) {
+    try {
+      let { organizations, company, ...userPayload } = payload;
+
+      let companyValue;
+      let organizationsValue = [];
+
+      if (company !== undefined && company !== '') {
+        const existingCompany = await this.companyService.getById(
+          company.toString(),
+        );
+        if (!existingCompany) {
+          throw new NotFoundException('Company not found');
+        }
+        companyValue = { id: existingCompany.id };
+      } else {
+        companyValue = null;
+      }
+
+      if (organizations) {
+        organizationsValue = await Promise.all(
+          organizations.map(
+            async (id) => await this.organizationService.getById(id),
+          ),
+        );
+        if (organizationsValue.some((organization) => !organization)) {
+          throw new NotFoundException('One or more organization not found');
+        }
+      }
+
+      const hash = await this.bcryptService.hash(payload.password);
+      userPayload.password = hash;
+
+      return await this.userRepository.signup({
+        company: companyValue,
+        organizations: organizationsValue,
+        ...userPayload,
+      });
+    } catch (error) {
+      return error.message;
+    }
+  }
+
   async update(
     payload: Partial<UpdateUserDto>,
     id: string,
   ): Promise<UpdateResult> {
-    const { company, organizations, password, ...userPayload } = payload;
+    try {
+      const { company, organizations, password, ...userPayload } = payload;
 
-    let updatePayload: Partial<users> = { ...userPayload };
+      let updatePayload: Partial<users> = { ...userPayload };
 
-    if (company !== undefined && company !== '') {
-      console.log('checked for undfiend and null');
-      const existingCompany = await this.companyService.getById(
-        company?.toString(),
-      );
-      if (!existingCompany) {
-        throw new NotFoundException('Company not found');
+      if (company !== undefined && company !== '') {
+        console.log('checked for undfiend and null');
+        const existingCompany = await this.companyService.getById(
+          company?.toString(),
+        );
+        if (!existingCompany) {
+          throw new NotFoundException('Company not found');
+        }
+        updatePayload.company = { id: existingCompany.id };
       }
-      updatePayload.company = { id: existingCompany.id };
-    }
 
-    if (company == '') {
-      updatePayload.company = null;
-    }
-
-    if (organizations) {
-      const organizationValue = await Promise.all(
-        organizations.map(
-          async (id) => await this.organizationService.getById(id),
-        ),
-      );
-      if (organizationValue.some((organization) => !organization)) {
-        throw new NotFoundException('One or more organizations not found');
+      if (company == '') {
+        updatePayload.company = null;
       }
-      await this.userRepository.save({
-        id: id,
-        ...updatePayload,
-        organizations: organizationValue,
-      });
-    }
 
-    if (password) {
-      const hash = await this.bcryptService.hash(password);
-      updatePayload.password = hash;
-    }
+      if (organizations) {
+        const organizationValue = await Promise.all(
+          organizations.map(
+            async (id) => await this.organizationService.getById(id),
+          ),
+        );
+        if (organizationValue.some((organization) => !organization)) {
+          throw new NotFoundException('One or more organizations not found');
+        }
+        await this.userRepository.save({
+          id: id,
+          ...updatePayload,
+          organizations: organizationValue,
+        });
+      }
 
-    if (isEmptyObject(updatePayload)) {
-      return;
+      if (password) {
+        const hash = await this.bcryptService.hash(password);
+        updatePayload.password = hash;
+      }
+
+      if (isEmptyObject(updatePayload)) {
+        return;
+      }
+      return await this.userRepository.update(updatePayload, id);
+    } catch (error) {
+      return error.message;
     }
-    return await this.userRepository.update(updatePayload, id);
   }
 
   async delete(id: string): Promise<DeleteResult> {
-    const user = await this.userRepository.getById(id);
-    if (!user) {
-      throw new NotFoundException('User Not Found');
-    }
+    try {
+      const user = await this.userRepository.getById(id);
+      if (!user) {
+        throw new NotFoundException('User Not Found');
+      }
 
-    return this.userRepository.delete(id);
+      return this.userRepository.delete(id);
+    } catch (error) {
+      return error.message;
+    }
   }
 
   async getByCompanyId(id: string): Promise<IUser[]> {
-    const company = this.companyService.getById(id);
+    try {
+      const company = this.companyService.getById(id);
 
-    if (!company) {
-      throw new NotFoundException('Company Not Found');
+      if (!company) {
+        throw new NotFoundException('Company Not Found');
+      }
+
+      return this.userRepository.getByCompanyId(id);
+    } catch (error) {
+      return error.message;
     }
-
-    return this.userRepository.getByCompanyId(id);
   }
 
   async getAll(): Promise<Partial<IUser[]>> {
-    return this.userRepository.getAll();
+    try {
+      return this.userRepository.getAll();
+    } catch (error) {
+      return error.message;
+    }
+  }
+
+  async getPaginatedUsers(
+    pageNumber: number,
+    pageSize: number,
+  ): Promise<IUser[]> {
+    return this.userRepository.getPaginatedUsers(pageNumber, pageSize);
   }
 }

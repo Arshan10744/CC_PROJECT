@@ -6,20 +6,17 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import {
   SITE_USECASE_PROXY,
   UseCaseProxy,
-  USER_USECASE_PROXY,
 } from 'src/infrastructure/usecaseproxy/usecase-proxy';
-import { UserUseCase } from 'src/usecases/user.usecase';
 import { SiteDto } from './dto';
 import { UpdateSiteDto } from './update.dto';
 import { DeleteResult, UpdateResult } from 'typeorm';
-import { users } from 'src/infrastructure/orm/entities/user.entity';
-import { IUser } from 'src/domain/models/user';
 import { SiteUseCase } from 'src/usecases/site.usecase';
 import { ISite } from 'src/domain/models/site';
 import { AbilitiesGuard } from 'src/infrastructure/guard/casl/abilities.guard';
@@ -27,6 +24,7 @@ import { CheckAbilities } from 'src/infrastructure/guard/casl/casl.decorator';
 import { Action } from 'src/infrastructure/utilities/enums';
 import { sites } from 'src/infrastructure/orm/entities/site.entity';
 import { AuthGuard } from '@nestjs/passport';
+import { PaginationDto } from 'src/infrastructure/utilities/pagination.dto';
 
 @Controller('/api/site')
 @UseGuards(AuthGuard('jwt'))
@@ -79,5 +77,14 @@ export class SiteController {
   @Get('/company/:id')
   async getAllByCompanyId(@Param('id') id: string): Promise<ISite[]> {
     return this.siteUseCase.getInstance().getAllByCompanyId(id);
+  }
+
+  @UseGuards(AbilitiesGuard)
+  @CheckAbilities({ action: Action.Read, subjects: sites })
+  @Get('/paginated')
+  async getPaginatedSites(@Query() query: PaginationDto) {
+    return this.siteUseCase
+      .getInstance()
+      .getPaginatedSites(query.pageNumber, query.pageSize);
   }
 }

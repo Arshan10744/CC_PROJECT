@@ -18,88 +18,108 @@ export class SiteUseCase {
   ) {}
 
   async create(payload: SiteDto) {
-    let { organization, ...sitePayload } = payload;
+    try {
+      let { organization, ...sitePayload } = payload;
 
-    let organizationValue;
+      let organizationValue;
 
-    if (organization !== undefined && organization !== '') {
-      const existingOrganization = await this.organizationService.getById(
-        organization.toString(),
-      );
-      if (!existingOrganization) {
-        throw new NotFoundException('Organization not found');
+      if (organization !== undefined && organization !== '') {
+        const existingOrganization = await this.organizationService.getById(
+          organization.toString(),
+        );
+        if (!existingOrganization) {
+          throw new NotFoundException('Organization not found');
+        }
+        organizationValue = { id: existingOrganization.id };
+      } else {
+        organizationValue = null;
       }
-      //   console.log(existingGroup);
-      organizationValue = { id: existingOrganization.id };
-    } else {
-      organizationValue = null;
-    }
 
-    // console.log(departmentsValue, groupValue, userPayload);
-    return await this.siteRepository.create({
-      organization: organizationValue,
-      ...sitePayload,
-    });
+      return await this.siteRepository.create({
+        organization: organizationValue,
+        ...sitePayload,
+      });
+    } catch (error) {
+      return error.message;
+    }
   }
   async update(
     payload: Partial<UpdateSiteDto>,
     id: string,
   ): Promise<UpdateResult> {
-    const { organization, ...userPayload } = payload;
+    try {
+      const { organization, ...userPayload } = payload;
 
-    let updatePayload: Partial<sites> = { ...userPayload };
+      let updatePayload: Partial<sites> = { ...userPayload };
 
-    if (organization !== undefined && organization !== '') {
-      const existingOrganization = await this.organizationService.getById(
-        organization.toString(),
-      );
-      if (!existingOrganization) {
-        throw new NotFoundException('Organization not found');
+      if (organization !== undefined && organization !== '') {
+        const existingOrganization = await this.organizationService.getById(
+          organization.toString(),
+        );
+        if (!existingOrganization) {
+          throw new NotFoundException('Organization not found');
+        }
+        updatePayload.organization = { id: existingOrganization.id };
       }
-      //   console.log(existingGroup);
-      updatePayload.organization = { id: existingOrganization.id };
-    }
 
-    if (organization == '') {
-      updatePayload.organization = null;
-    }
+      if (organization == '') {
+        updatePayload.organization = null;
+      }
 
-    if (isEmptyObject(updatePayload)) {
-      return;
+      if (isEmptyObject(updatePayload)) {
+        return;
+      }
+      return await this.siteRepository.update(updatePayload, id);
+    } catch (error) {
+      return error.message;
     }
-    return await this.siteRepository.update(updatePayload, id);
   }
 
   async delete(id: string): Promise<DeleteResult> {
-    const user = await this.siteRepository.getById(id);
-    if (user) {
+    try {
+      const site = await this.siteRepository.getById(id);
+      if (!site) {
+        throw new NotFoundException('site Not Found');
+      }
       return this.siteRepository.delete(id);
+    } catch (error) {
+      return error.message;
     }
-    throw new NotFoundException('site Not Found');
   }
-
-  //   // async findByUsername(username: string): Promise<UserDto> {
-  //   //   return this.userRepository.findByUsername(username);
-  //   // }
 
   async getAll(): Promise<Partial<ISite[]>> {
     return this.siteRepository.getAll();
   }
 
   async getAllByOrganizationId(id: string): Promise<ISite[]> {
-    const organization = await this.organizationService.getById(id);
-    if (!organization) {
-      throw new NotFoundException('Organization Not Found');
+    try {
+      const organization = await this.organizationService.getById(id);
+      if (!organization) {
+        throw new NotFoundException('Organization Not Found');
+      }
+      return this.siteRepository.getAllByOrganizationId(id);
+    } catch (error) {
+      return error.message;
     }
-    return this.siteRepository.getAllByOrganizationId(id);
   }
 
   async getAllByCompanyId(id: string): Promise<ISite[]> {
-    const company = await this.companyService.getById(id);
-    if (!company) {
-      throw new NotFoundException('company Not Found');
+    try {
+      const company = await this.companyService.getById(id);
+      if (!company) {
+        throw new NotFoundException('company Not Found');
+      }
+      console.log(company);
+      return this.siteRepository.getAllByCompanyId(company.id);
+    } catch (error) {
+      return error;
     }
-    console.log(company);
-    return this.siteRepository.getAllByCompanyId(company.id);
+  }
+
+  async getPaginatedSites(
+    pageNumber: number,
+    pageSize: number,
+  ): Promise<ISite[]> {
+    return this.siteRepository.getPaginatedSites(pageNumber, pageSize);
   }
 }

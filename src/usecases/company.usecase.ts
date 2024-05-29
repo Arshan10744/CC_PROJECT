@@ -18,94 +18,113 @@ export class CompanyUseCase {
   ) {}
 
   async create(payload: CompanyDto): Promise<string> {
-    const { users, organizations, ...companyPayload } = payload;
+    try {
+      let { users, organizations, ...companyPayload } = payload;
 
-    let organizationsValue;
-    let usersValue;
+      let organizationsValue = [];
+      let usersValue = [];
 
-    if (organizations && organizations.length > 0) {
-      organizationsValue = await Promise.all(
-        organizations.map(
-          async (id) => await this.organizationService.getById(id),
-        ),
-      );
-      if (organizationsValue.some((organization) => !organization)) {
-        throw new NotFoundException('One or more organization not found');
+      if (organizations) {
+        organizationsValue = await Promise.all(
+          organizations.map(
+            async (id) => await this.organizationService.getById(id),
+          ),
+        );
+        if (organizationsValue.some((organization) => !organization)) {
+          throw new NotFoundException('One or more organization not found');
+        }
       }
-    } else {
-      organizationsValue = [];
-    }
 
-    if (users && users.length > 0) {
-      usersValue = await Promise.all(
-        users.map(async (id) => await this.userService.getById(id)),
-      );
-      if (usersValue.some((user) => !user)) {
-        throw new NotFoundException('One or more users not found');
+      if (users) {
+        usersValue = await Promise.all(
+          users.map(async (id) => await this.userService.getById(id)),
+        );
+        if (usersValue.some((user) => !user)) {
+          throw new NotFoundException('One or more users not found');
+        }
       }
-    } else {
-      usersValue = [];
-    }
 
-    await this.companyRepository.create({
-      users: usersValue,
-      organizations: organizationsValue,
-      ...companyPayload,
-    });
-    return 'company created successfully';
+      await this.companyRepository.create({
+        users: usersValue,
+        organizations: organizationsValue,
+        ...companyPayload,
+      });
+      return 'company created successfully';
+    } catch (error) {
+      return error.message;
+    }
   }
 
   async update(payload: UpdateCompanyDto, id: string) {
-    const { users, organizations, ...companyPayload } = payload;
+    try {
+      const { users, organizations, ...companyPayload } = payload;
 
-    const updatePayload: Partial<companies> = { ...companyPayload };
+      const updatePayload: Partial<companies> = { ...companyPayload };
 
-    if (organizations) {
-      const organizationsValue = await Promise.all(
-        organizations.map(
-          async (id) => await this.organizationService.getById(id),
-        ),
-      );
+      if (organizations) {
+        const organizationsValue = await Promise.all(
+          organizations.map(
+            async (id) => await this.organizationService.getById(id),
+          ),
+        );
 
-      if (organizationsValue.some((organization) => !organization)) {
-        throw new NotFoundException('One or more organization not found');
+        if (organizationsValue.some((organization) => !organization)) {
+          throw new NotFoundException('One or more organization not found');
+        }
+        await this.companyRepository.save({
+          id: id,
+          ...updatePayload,
+          organizations: organizationsValue,
+        });
       }
-      await this.companyRepository.save({
-        id: id,
-        ...updatePayload,
-        organizations: organizationsValue,
-      });
-    }
 
-    if (users) {
-      const usersValue = await Promise.all(
-        users.map(async (id) => await this.userService.getById(id)),
-      );
-      if (usersValue.some((user) => !user)) {
-        throw new NotFoundException('One or more users not found');
+      if (users) {
+        const usersValue = await Promise.all(
+          users.map(async (id) => await this.userService.getById(id)),
+        );
+        if (usersValue.some((user) => !user)) {
+          throw new NotFoundException('One or more users not found');
+        }
+        await this.companyRepository.save({
+          id: id,
+          ...updatePayload,
+          users: usersValue,
+        });
       }
-      await this.companyRepository.save({
-        id: id,
-        ...updatePayload,
-        users: usersValue,
-      });
-    }
 
-    if (isEmptyObject(updatePayload)) {
-      return;
+      if (isEmptyObject(updatePayload)) {
+        return;
+      }
+      return await this.companyRepository.update(updatePayload, id);
+    } catch (error) {
+      return error.message;
     }
-    return await this.companyRepository.update(updatePayload, id);
   }
 
   async delete(id: string): Promise<DeleteResult> {
-    const user = await this.companyRepository.getById(id);
-    if (user) {
+    try {
+      const company = await this.companyRepository.getById(id);
+      if (!company) {
+        throw new NotFoundException('Company Not Found');
+      }
       return this.companyRepository.delete(id);
+    } catch (error) {
+      return error.message;
     }
-    throw new NotFoundException('Company Not Found');
   }
 
   async getAll(): Promise<Partial<ICompany[]>> {
-    return this.companyRepository.getAll();
+    try {
+      return this.companyRepository.getAll();
+    } catch (error) {
+      return error.message;
+    }
+  }
+
+  async getPaginatedCompanies(
+    pageNumber: number,
+    pageSize: number,
+  ): Promise<ICompany[]> {
+    return this.companyRepository.getPaginatedCompanies(pageNumber, pageSize);
   }
 }

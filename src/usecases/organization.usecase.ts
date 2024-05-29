@@ -18,135 +18,160 @@ export class OrganizationUseCase {
     private readonly siteService: SiteRepository,
   ) {}
   async create(payload: OrganizationDto) {
-    let { company, users, sites, ...organizationPayload } = payload;
+    try {
+      let { company, users, sites, ...organizationPayload } = payload;
 
-    let CompanyValue;
-    let UsersValue = [];
-    let SitesValue = [];
+      let CompanyValue;
+      let UsersValue = [];
+      let SitesValue = [];
 
-    if (users && users.length > 0) {
-      UsersValue = await Promise.all(
-        users.map(async (id) => await this.userService.getById(id)),
+      if (users && users.length > 0) {
+        UsersValue = await Promise.all(
+          users.map(async (id) => await this.userService.getById(id)),
+        );
+        if (UsersValue.some((user) => !user)) {
+          throw new NotFoundException('One or more users not found');
+        }
+      }
+
+      if (sites && sites.length > 0) {
+        SitesValue = await Promise.all(
+          sites.map(async (id) => await this.siteService.getById(id)),
+        );
+        if (SitesValue.some((site) => !site)) {
+          throw new NotFoundException('One or more sites not found');
+        }
+      }
+
+      if (company !== undefined && company !== '') {
+        const existingCompany = await this.companyRepository.getById(
+          company.toString(),
+        );
+        if (!existingCompany) {
+          throw new NotFoundException('company not found');
+        }
+        CompanyValue = { id: existingCompany.id };
+
+        if (UsersValue.length === 0) {
+          const companyUsers = await this.userService.getByCompanyId(
+            existingCompany.id,
+          );
+          console.log('users of the company-----', companyUsers);
+          const adminUsers = companyUsers.filter(
+            (user) => user.role === 'admin',
+          );
+          console.log('admin users of the company-----', adminUsers);
+          UsersValue = adminUsers;
+        }
+      } else {
+        CompanyValue = null;
+      }
+
+      console.log(
+        'Users Value Before Setting it into the payload-----',
+        UsersValue,
       );
-      if (UsersValue.some((user) => !user)) {
-        throw new NotFoundException('One or more users not found');
-      }
-    } else {
-      UsersValue = [];
+
+      return this.organizationRepository.create({
+        company: CompanyValue,
+        users: UsersValue,
+        sites: SitesValue,
+        ...organizationPayload,
+      });
+    } catch (error) {
+      return error.message;
     }
-
-    if (sites && sites.length > 0) {
-      SitesValue = await Promise.all(
-        sites.map(async (id) => await this.siteService.getById(id)),
-      );
-      if (SitesValue.some((site) => !site)) {
-        throw new NotFoundException('One or more sites not found');
-      }
-    } else {
-      SitesValue = [];
-    }
-
-    if (company !== undefined && company != '') {
-      const existingCompany = await this.companyRepository.getById(
-        company.toString(),
-      );
-      if (!existingCompany) {
-        throw new NotFoundException('company not found');
-      }
-      CompanyValue = { id: existingCompany.id };
-
-      if (UsersValue.length == 0) {
-        console.log('I am inside this iffff.......................');
-        const users = await this.userService.getByCompanyId(existingCompany.id);
-        console.log(users);
-        const adminUsers = users.filter((user) => {
-          return user.role == 'admin';
-        });
-        console.log(adminUsers);
-        UsersValue = adminUsers;
-        console.log('Inside iffffffffffffffff.............', UsersValue);
-      }
-    } else {
-      CompanyValue = null;
-    }
-
-    console.log(UsersValue);
-
-    return await this.organizationRepository.create({
-      company: CompanyValue,
-      users: UsersValue,
-      sites: SitesValue,
-      ...organizationPayload,
-    });
   }
 
   async update(
     payload: Partial<UpdateOrganizationDto>,
     id: string,
   ): Promise<UpdateResult> {
-    console.log(payload);
-    const { company, users, sites, ...organizationPayload } = payload;
+    try {
+      console.log(payload);
+      const { company, users, sites, ...organizationPayload } = payload;
 
-    let updatePayload: Partial<organizations> = { ...organizationPayload };
+      let updatePayload: Partial<organizations> = { ...organizationPayload };
 
-    if (company !== undefined && company !== '') {
-      const existingCompany = await this.companyRepository.getById(
-        company.toString(),
-      );
-      if (!existingCompany) {
-        throw new NotFoundException('Company not found');
+      if (company !== undefined && company !== '') {
+        const existingCompany = await this.companyRepository.getById(
+          company.toString(),
+        );
+        if (!existingCompany) {
+          throw new NotFoundException('Company not found');
+        }
+        updatePayload.company = { id: existingCompany.id };
       }
-      updatePayload.company = { id: existingCompany.id };
-    }
 
-    if (company == '') {
-      updatePayload.company = null;
-    }
-
-    if (users) {
-      const usersValue = await Promise.all(
-        users.map(async (id) => await this.userService.getById(id)),
-      );
-      if (usersValue.some((user) => !user)) {
-        throw new NotFoundException('One or more users not found');
+      if (company == '') {
+        updatePayload.company = null;
       }
-      await this.organizationRepository.save({
-        id: id,
-        ...updatePayload,
-        users: usersValue,
-      });
-    }
 
-    if (sites) {
-      const SitesValue = await Promise.all(
-        sites.map(async (id) => await this.siteService.getById(id)),
-      );
-      if (SitesValue.some((site) => !site)) {
-        throw new NotFoundException('One or more sites not found');
+      if (users) {
+        const usersValue = await Promise.all(
+          users.map(async (id) => await this.userService.getById(id)),
+        );
+        if (usersValue.some((user) => !user)) {
+          throw new NotFoundException('One or more users not found');
+        }
+        await this.organizationRepository.save({
+          id: id,
+          ...updatePayload,
+          users: usersValue,
+        });
       }
-      await this.organizationRepository.save({
-        id: id,
-        ...updatePayload,
-        sites: SitesValue,
-      });
-    }
 
-    if (isEmptyObject(updatePayload)) {
-      return;
+      if (sites) {
+        const SitesValue = await Promise.all(
+          sites.map(async (id) => await this.siteService.getById(id)),
+        );
+        if (SitesValue.some((site) => !site)) {
+          throw new NotFoundException('One or more sites not found');
+        }
+        await this.organizationRepository.save({
+          id: id,
+          ...updatePayload,
+          sites: SitesValue,
+        });
+      }
+
+      if (isEmptyObject(updatePayload)) {
+        return;
+      }
+      console.log(updatePayload);
+      return await this.organizationRepository.update(updatePayload, id);
+    } catch (error) {
+      return error.message;
     }
-    console.log(updatePayload);
-    return await this.organizationRepository.update(updatePayload, id);
   }
 
   async delete(id: string): Promise<DeleteResult> {
-    const organization = await this.organizationRepository.getById(id);
-    if (organization) {
+    try {
+      const organization = await this.organizationRepository.getById(id);
+      if (!organization) {
+        throw new NotFoundException('organization Not Found');
+      }
       return this.organizationRepository.delete(id);
+    } catch (error) {
+      return error.message;
     }
-    throw new NotFoundException('organization Not Found');
   }
 
   async getAll(): Promise<Partial<IOrganization[]>> {
-    return this.organizationRepository.getAll();
+    try {
+      return this.organizationRepository.getAll();
+    } catch (error) {
+      return error.message;
+    }
+  }
+
+  async getPaginatedOrganizations(
+    pageNumber: number,
+    pageSize: number,
+  ): Promise<IOrganization[]> {
+    return this.organizationRepository.getPaginatedOrganizations(
+      pageNumber,
+      pageSize,
+    );
   }
 }

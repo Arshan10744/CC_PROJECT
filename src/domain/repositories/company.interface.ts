@@ -7,4 +7,8 @@ export interface ICompanyRepository {
   getAll(): Promise<ICompany[]>;
   update(payload: Partial<ICompany>, id: string): Promise<UpdateResult>;
   getById(id: string): Promise<ICompany>;
+  getPaginatedCompanies(
+    pageNumber: number,
+    pageSize: number,
+  ): Promise<ICompany[]>;
 }

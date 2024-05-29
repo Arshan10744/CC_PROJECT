@@ -23,16 +23,17 @@ export class organizations {
     nullable: true,
     onDelete: 'CASCADE',
   })
-  sites: sites[];
+  sites?: sites[];
 
   @ManyToOne(() => companies, (company) => company.organizations, {
     nullable: true,
+    onDelete: 'CASCADE',
   })
-  company: Partial<companies>;
+  company?: Partial<companies>;
 
   @ManyToMany(() => users, (user) => user.organizations, {
     nullable: true,
   })
   @JoinTable()
-  users: users[];
+  users?: users[];
 }

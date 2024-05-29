@@ -6,7 +6,6 @@ import { users } from '../entities/user.entity';
 
 @Injectable()
 export class AuthRepository implements IAuthRepository {
-  //name
   constructor(
     @InjectRepository(users)
     private readonly userRepository: Repository<users>,

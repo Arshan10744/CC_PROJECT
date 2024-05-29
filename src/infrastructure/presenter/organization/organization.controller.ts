@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
@@ -13,7 +14,6 @@ import {
   ORGANIZATION_USECASE_PROXY,
   UseCaseProxy,
 } from 'src/infrastructure/usecaseproxy/usecase-proxy';
-import { UserUseCase } from 'src/usecases/user.usecase';
 import { OrganizationDto } from './dto';
 import { UpdateOrganizationDto } from './update.dto';
 import { DeleteResult, UpdateResult } from 'typeorm';
@@ -24,7 +24,7 @@ import { CheckAbilities } from 'src/infrastructure/guard/casl/casl.decorator';
 import { Action } from 'src/infrastructure/utilities/enums';
 import { organizations } from 'src/infrastructure/orm/entities/organization.entity';
 import { AuthGuard } from '@nestjs/passport';
-
+import { PaginationDto } from 'src/infrastructure/utilities/pagination.dto';
 @Controller('/api/organization')
 @UseGuards(AuthGuard('jwt'))
 export class OrganizationController {
@@ -38,6 +38,15 @@ export class OrganizationController {
   @Post('/')
   async create(@Body() payload: OrganizationDto): Promise<string> {
     return this.organizationUseCase.getInstance().create(payload);
+  }
+
+  @UseGuards(AbilitiesGuard)
+  @CheckAbilities({ action: Action.Read, subjects: organizations })
+  @Get('/paginated')
+  async getPaginatedOrganizations(@Query() query: PaginationDto) {
+    return this.organizationUseCase
+      .getInstance()
+      .getPaginatedOrganizations(query.pageNumber, query.pageSize);
   }
 
   @UseGuards(AbilitiesGuard)

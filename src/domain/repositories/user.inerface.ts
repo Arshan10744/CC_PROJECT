@@ -10,4 +10,6 @@ export interface IUserRepository {
   getByCompanyId(id: string): Promise<IUser[]>;
   getByEmail(email: string): Promise<IUser>;
   enableTwoFactorAuth(id: string): Promise<any>;
+  signup(payload: Partial<IUser>): Promise<string>;
+  getPaginatedUsers(pageNumber: number, pageSize: number): Promise<IUser[]>;
 }

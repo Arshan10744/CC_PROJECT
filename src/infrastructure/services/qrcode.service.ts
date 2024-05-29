@@ -1,12 +1,10 @@
-import * as speakeasy from 'speakeasy';
 import * as qrcode from 'qrcode';
 import { IQrcode } from 'src/domain/services/qrcode.interface';
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class QrcodeService implements IQrcode {
-  constructor(private readonly configService: ConfigService) {}
+  constructor() {}
 
   async generateQRCode(otpAuthUrl: string) {
     try {

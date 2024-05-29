@@ -5,7 +5,7 @@ import { IUser } from './user';
 export interface IOrganization {
   id: string;
   name: string;
-  sites: Partial<sites[]>;
-  company: Partial<ICompany>;
-  users: Partial<IUser[]>;
+  sites?: Partial<sites[]>;
+  company?: Partial<ICompany>;
+  users?: Partial<IUser[]>;
 }

@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { users } from '../orm/entities/user.entity';
 import {
-  Ability,
   AbilityBuilder,
   ExtractSubjectType,
   InferSubjects,

@@ -1,6 +1,4 @@
 import * as speakeasy from 'speakeasy';
-import * as qrcode from 'qrcode';
-import { IQrcode } from 'src/domain/services/qrcode.interface';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ISpeakeasy } from 'src/domain/services/speakeasy.interface';

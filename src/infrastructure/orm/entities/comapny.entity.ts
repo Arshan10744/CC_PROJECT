@@ -22,12 +22,12 @@ export class companies {
     cascade: true,
     onDelete: 'CASCADE',
   })
-  users: users[];
+  users?: users[];
 
   @OneToMany(() => organizations, (organization) => organization.company, {
     nullable: true,
     cascade: true,
     onDelete: 'CASCADE',
   })
-  organizations: organizations[];
+  organizations?: organizations[];
 }

@@ -1,10 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository, UpdateResult } from 'typeorm';
 import { ICompanyRepository } from 'src/domain/repositories/company.interface';
 import { companies } from '../entities/comapny.entity';
 import { IOrganizationRepository } from 'src/domain/repositories/organization.interface';
 import { organizations } from '../entities/organization.entity';
+import { IOrganization } from 'src/domain/models/organization';
 
 @Injectable()
 export class OrganizationRepository implements IOrganizationRepository {
@@ -14,7 +19,12 @@ export class OrganizationRepository implements IOrganizationRepository {
   ) {}
 
   async create(payload: Partial<organizations>): Promise<string> {
-    await this.organizationRepository.save(payload);
+    console.log('Repository Payload-----', payload);
+    const organization = this.organizationRepository.create(payload);
+    console.log('Created Organization:---------------', organization);
+    const savedOrganization =
+      await this.organizationRepository.save(organization);
+    console.log('Saved Orgnization', savedOrganization);
     return 'organization Created Successfully';
   }
 
@@ -57,5 +67,48 @@ export class OrganizationRepository implements IOrganizationRepository {
 
   async getById(id: string): Promise<organizations> {
     return this.organizationRepository.findOneBy({ id });
+  }
+
+  async getPaginatedOrganizations(
+    pageNumber: number,
+    pageSize: number,
+  ): Promise<organizations[]> {
+    console.log(pageNumber);
+    try {
+      const organizations = await this.organizationRepository.find({
+        take: pageSize,
+        skip: (pageNumber - 1) * pageSize,
+        relations: { sites: true, company: true, users: true },
+        select: {
+          sites: {
+            id: true,
+            name: true,
+          },
+          company: {
+            id: true,
+            name: true,
+          },
+          users: {
+            id: true,
+            username: true,
+            role: true,
+            email: true,
+          },
+        },
+      });
+
+      if (organizations.length === 0) {
+        throw new NotFoundException(
+          'No organizations found for the provided page',
+        );
+      }
+
+      return organizations;
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Failed to fetch organizations',
+        error.message,
+      );
+    }
   }
 }

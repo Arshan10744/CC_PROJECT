@@ -21,30 +21,46 @@ export class AuthUseCase {
   ) {}
 
   async validate(payload: AuthDto): Promise<any> {
-    const { email, password } = payload;
-    console.log(email, password);
-    const user = await this.authRepository.validate(email);
+    try {
+      const { email, password } = payload;
+      console.log(email, password);
+      const user = await this.authRepository.validate(email);
 
-    if (!user) {
-      throw new NotFoundException('User Not Found');
-    }
+      if (!user) {
+        throw new NotFoundException('User Not Found');
+      }
 
-    const passwordMatch = await this.bcryptService.compare(
-      password,
-      user.password,
-    );
-    if (!passwordMatch) {
-      throw new NotFoundException('Invalid credentials');
-    }
+      const passwordMatch = await this.bcryptService.compare(
+        password,
+        user.password,
+      );
+      if (!passwordMatch) {
+        throw new NotFoundException('Invalid credentials');
+      }
 
-    const jwtPayload = {
-      id: user.id,
-      role: user.role,
-      username: user.username,
-      email: user.email,
-    };
+      const jwtPayload = {
+        id: user.id,
+        role: user.role,
+        username: user.username,
+        email: user.email,
+      };
 
-    if (user.is2faAuthenticated) {
+      if (user.is2faAuthenticated) {
+        return {
+          version: 'This token is for 2FA',
+          access_token: this.jwtTokenService.createToken(
+            jwtPayload,
+            this.configService.get('JWT_SECRET_2FA'),
+            this.configService.get('JWT_EXPIRATION_TIME_2FA'),
+          ),
+        };
+      }
+
+      const { secret } = this.speakeasyService.getSecret();
+      const qrCodeUrl = await this.qrCodeService.generateQRCode(
+        secret.otpauthUrl,
+      );
+
       return {
         version: 'This token is for 2FA',
         access_token: this.jwtTokenService.createToken(
@@ -52,48 +68,40 @@ export class AuthUseCase {
           this.configService.get('JWT_SECRET_2FA'),
           this.configService.get('JWT_EXPIRATION_TIME_2FA'),
         ),
+        qrCodeUrl: qrCodeUrl,
       };
+    } catch (error) {
+      return error.message;
     }
-
-    const { secret } = this.speakeasyService.getSecret();
-    const qrCodeUrl = await this.qrCodeService.generateQRCode(
-      secret.otpauthUrl,
-    );
-
-    return {
-      version: 'This token is for 2FA',
-      access_token: this.jwtTokenService.createToken(
-        jwtPayload,
-        this.configService.get('JWT_SECRET_2FA'),
-        this.configService.get('JWT_EXPIRATION_TIME_2FA'),
-      ),
-      qrCodeUrl: qrCodeUrl,
-    };
   }
 
   async validate2FA(payload: AuthDto): Promise<any> {
-    const { email, password } = payload;
-    console.log(email, password);
-    const user = await this.authRepository.validate(email);
+    try {
+      const { email, password } = payload;
+      console.log(email, password);
+      const user = await this.authRepository.validate(email);
 
-    if (!user) {
-      throw new NotFoundException('User Not Found');
+      if (!user) {
+        throw new NotFoundException('User Not Found');
+      }
+
+      const passwordMatch = await this.bcryptService.compare(
+        password,
+        user.password,
+      );
+      if (!passwordMatch) {
+        throw new NotFoundException('Invalid credentials');
+      }
+
+      const jwtPayload = {
+        id: user.id,
+        role: user.role,
+        username: user.username,
+        email: user.email,
+      };
+    } catch (error) {
+      return error.message;
     }
-
-    const passwordMatch = await this.bcryptService.compare(
-      password,
-      user.password,
-    );
-    if (!passwordMatch) {
-      throw new NotFoundException('Invalid credentials');
-    }
-
-    const jwtPayload = {
-      id: user.id,
-      role: user.role,
-      username: user.username,
-      email: user.email,
-    };
   }
 
   async verifyToken(token: string, userPayload: Partial<users>): Promise<any> {

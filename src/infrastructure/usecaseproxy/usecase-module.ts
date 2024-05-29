@@ -19,7 +19,6 @@ import { SiteRepository } from '../orm/repositories/site.repository';
 import { SiteUseCase } from 'src/usecases/site.usecase';
 import { OrganizationUseCase } from 'src/usecases/organization.usecase';
 import { CompanyUseCase } from 'src/usecases/company.usecase';
-import { users } from '../orm/entities/user.entity';
 import { JwtTokenService } from '../services/jwt.service';
 import { AuthRepository } from '../orm/repositories/auth.repository';
 import { AuthUseCase } from 'src/usecases/auth.usecase';
