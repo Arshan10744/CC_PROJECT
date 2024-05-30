@@ -21,7 +21,7 @@ import { DeleteResult, UpdateResult } from 'typeorm';
 import { IUser } from 'src/domain/models/user';
 import { AuthGuard } from '@nestjs/passport';
 import { AbilitiesGuard } from 'src/infrastructure/guard/casl/abilities.guard';
-import { CheckAbilities } from 'src/infrastructure/guard/casl/casl.decorator';
+import { CheckAbilities } from 'src/infrastructure/utilities/constants';
 import { Action } from 'src/infrastructure/utilities/enums';
 import { users } from 'src/infrastructure/orm/entities/user.entity';
 import { PaginationDto } from 'src/infrastructure/utilities/pagination.dto';

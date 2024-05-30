@@ -3,21 +3,13 @@ import { users } from '../orm/entities/user.entity';
 import {
   AbilityBuilder,
   ExtractSubjectType,
-  InferSubjects,
   MongoAbility,
   MongoQuery,
   createMongoAbility,
 } from '@casl/ability';
-import { organizations } from '../orm/entities/organization.entity';
-import { companies } from '../orm/entities/comapny.entity';
 import { sites } from '../orm/entities/site.entity';
 import { Action } from '../utilities/enums';
-
-export type Subjects =
-  | InferSubjects<
-      typeof organizations | typeof users | typeof companies | typeof sites
-    >
-  | 'all';
+import { Subjects } from '../utilities/constants';
 
 type PossibleAbilities = [Action, Subjects];
 type Conditions = MongoQuery;

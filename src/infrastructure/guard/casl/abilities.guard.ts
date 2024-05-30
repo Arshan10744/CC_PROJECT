@@ -6,7 +6,8 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { CaslAbilityFactory } from 'src/infrastructure/services/ability.service';
-import { CHECK_ABILITY, RequiredRule } from './casl.decorator';
+import { RequiredRule } from 'src/domain/models/casl-requiredrule';
+import { CHECK_ABILITY } from 'src/infrastructure/utilities/constants';
 import { ForbiddenError } from '@casl/ability';
 
 @Injectable()

@@ -21,7 +21,7 @@ import { CompanyDto } from './dto';
 import { UpdateCompanyDto } from './update.dto';
 import { ICompany } from 'src/domain/models/company';
 import { AbilitiesGuard } from 'src/infrastructure/guard/casl/abilities.guard';
-import { CheckAbilities } from 'src/infrastructure/guard/casl/casl.decorator';
+import { CheckAbilities } from 'src/infrastructure/utilities/constants';
 import { Action } from 'src/infrastructure/utilities/enums';
 import { companies } from 'src/infrastructure/orm/entities/comapny.entity';
 import { AuthGuard } from '@nestjs/passport';

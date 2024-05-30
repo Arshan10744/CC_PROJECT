@@ -74,33 +74,6 @@ export class AuthUseCase {
     }
   }
 
-  async validate2FA(payload: AuthDto): Promise<any> {
-    try {
-      const { email, password } = payload;
-      const user = await this.authRepository.validate(email);
-
-      if (!user) {
-        throw new NotFoundException('User Not Found');
-      }
-
-      const passwordMatch = await this.bcryptService.compare(
-        password,
-        user.password,
-      );
-      if (!passwordMatch) {
-        throw new NotFoundException('Invalid credentials');
-      }
-
-      const jwtPayload = {
-        id: user.id,
-        role: user.role,
-        username: user.username,
-        email: user.email,
-      };
-    } catch (error) {
-      return error.message;
-    }
-  }
 
   async verifyToken(token: string, userPayload: Partial<users>): Promise<any> {
     try {

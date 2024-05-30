@@ -20,7 +20,7 @@ import { DeleteResult, UpdateResult } from 'typeorm';
 import { OrganizationUseCase } from 'src/usecases/organization.usecase';
 import { IOrganization } from 'src/domain/models/organization';
 import { AbilitiesGuard } from 'src/infrastructure/guard/casl/abilities.guard';
-import { CheckAbilities } from 'src/infrastructure/guard/casl/casl.decorator';
+import { CheckAbilities } from 'src/infrastructure/utilities/constants';
 import { Action } from 'src/infrastructure/utilities/enums';
 import { organizations } from 'src/infrastructure/orm/entities/organization.entity';
 import { AuthGuard } from '@nestjs/passport';
