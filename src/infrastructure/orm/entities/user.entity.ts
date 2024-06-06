@@ -21,10 +21,9 @@ export class users {
   role: UserRole;
 
   @ManyToOne(() => companies, (company) => company.users, {
-    nullable: true,
     onDelete: 'CASCADE',
   })
-  company?: Partial<companies>;
+  company: Partial<companies>;
 
   @ManyToMany(() => organizations, (organization) => organization.users, {
     nullable: true,

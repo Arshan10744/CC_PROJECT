@@ -1,4 +1,4 @@
-import {  ManyToOne } from 'typeorm';
+import { ManyToOne } from 'typeorm';
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { organizations } from './organization.entity';
 @Entity('sites')
@@ -13,5 +13,5 @@ export class sites {
     nullable: true,
     onDelete: 'CASCADE',
   })
-  organization?: Partial<organizations>;
+  organization: Partial<organizations>;
 }

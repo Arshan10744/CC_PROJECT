@@ -8,6 +8,10 @@ import { DeleteResult, Repository, UpdateResult } from 'typeorm';
 import { IUserRepository } from 'src/domain/repositories/user.inerface';
 import { users } from '../entities/user.entity';
 import { IUser } from 'src/domain/models/user';
+import { plainToInstance } from 'class-transformer';
+import { UserPresenter } from 'src/infrastructure/presenter/user/user.presenter';
+import { CompanyPresenter } from 'src/infrastructure/presenter/company/company.presenter';
+import { OrganizationPresenter } from 'src/infrastructure/presenter/organization/organization.presenter';
 
 @Injectable()
 export class UserRepository implements IUserRepository {
@@ -20,12 +24,6 @@ export class UserRepository implements IUserRepository {
     const user = this.userRepository.create(payload);
     await this.userRepository.save(user);
     return 'user Created Successfully';
-  }
-
-  async signup(payload: Partial<IUser>): Promise<string> {
-    const user = this.userRepository.create(payload);
-    await this.userRepository.save(user);
-    return 'Sign Up Successfull';
   }
 
   async delete(id: string): Promise<DeleteResult> {
@@ -43,11 +41,20 @@ export class UserRepository implements IUserRepository {
     return this.userRepository.update({ id }, payload);
   }
 
-  async getAll(): Promise<users[]> {
-    return this.userRepository.find({
+  async getAll(user: users): Promise<users[]> {
+    const users = await this.userRepository.find({
+      where: {
+        company: {
+          id: user.company.id,
+        },
+      },
       relations: { company: true, organizations: true },
-      select: ['id', 'username', 'email', 'role'],
     });
+    
+    return plainToInstance(UserPresenter, users, {
+      excludeExtraneousValues: true,
+    });
+  
   }
 
   async save(payload: any) {
@@ -55,58 +62,52 @@ export class UserRepository implements IUserRepository {
   }
 
   async getByCompanyId(id: string): Promise<IUser[]> {
-    return this.userRepository.find({
+    const users = await this.userRepository.find({
       where: { company: { id: id } },
-      select: ['id', 'username', 'email', 'role'],
+    });
+    // return users.map((user)=>{
+    //   const userPresenter = new UserPresenter()
+
+    //   userPresenter.id = user.id;
+    //   userPresenter.username = user.username;
+    //   userPresenter.email = user.email;
+    //   userPresenter.company = new CompanyPresenter();
+    //   userPresenter.company.id = user.company.id;
+    //   userPresenter.organizations = new OrganizationPresenter();
+    // })
+
+    return plainToInstance(UserPresenter, users, {
+      excludeExtraneousValues: true,
     });
   }
 
   async getById(id: string): Promise<users> {
-    return this.userRepository.findOneBy({ id });
+    return this.userRepository.findOne({
+      where: { id },
+      relations: ['company', 'organizations'],
+    });
   }
 
   async getByEmail(email: string): Promise<IUser> {
     return this.userRepository.findOneBy({ email });
   }
 
-  async enableTwoFactorAuth(userId: string): Promise<void> {
-    await this.userRepository.update(userId, { is2faAuthenticated: true });
+  async updatePassword(userId: string, hash: string): Promise<UpdateResult> {
+    return this.userRepository.update(userId, { password: hash });
   }
 
   async getPaginatedUsers(
     pageNumber: number,
     pageSize: number,
   ): Promise<IUser[]> {
-    try {
-      const users = await this.userRepository.find({
-        take: pageSize,
-        skip: (pageNumber - 1) * pageSize,
-        relations: { company: true, organizations: true },
-        select: {
-          id: true,
-          username: true,
-          email: true,
-          company: {
-            id: true,
-            name: true,
-          },
-          organizations: {
-            id: true,
-            name: true,
-          },
-        },
-      });
+    const users = await this.userRepository.find({
+      take: pageSize,
+      skip: (pageNumber - 1) * pageSize,
+      relations: { company: true, organizations: true },
+    });
 
-      if (users.length === 0) {
-        throw new NotFoundException('No users found for the provided page');
-      }
-
-      return users;
-    } catch (error) {
-      throw new InternalServerErrorException(
-        'Failed to fetch users',
-        error.message,
-      );
-    }
+    return plainToInstance(UserPresenter, users, {
+      excludeExtraneousValues: true,
+    });
   }
 }

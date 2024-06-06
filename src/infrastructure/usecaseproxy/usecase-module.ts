@@ -24,6 +24,7 @@ import { AuthRepository } from '../orm/repositories/auth.repository';
 import { AuthUseCase } from 'src/usecases/auth.usecase';
 import { QrcodeService } from '../services/qrcode.service';
 import { SpeakeasyService } from '../services/speakeasy.service';
+import { organizations } from '../orm/entities/organization.entity';
 
 @Module({
   imports: [RepositoriesModule],
@@ -42,6 +43,8 @@ export class UseCaseModule {
             QrcodeService,
             UserRepository,
             SpeakeasyService,
+            CompanyRepository,
+            OrganizationRepository,
           ],
           provide: AUTH_USECASE_PROXY,
           useFactory: (
@@ -52,15 +55,19 @@ export class UseCaseModule {
             qrCodeService: QrcodeService,
             userRepository: UserRepository,
             speakeasyService: SpeakeasyService,
+            organizationService: OrganizationRepository,
+            companyService: CompanyRepository,
           ) =>
             new UseCaseProxy(
               new AuthUseCase(
+                companyService,
+                organizationService,
+                authRepository,
+                userRepository,
                 bcryptService,
                 configService,
                 jwtTokenService,
-                authRepository,
                 qrCodeService,
-                userRepository,
                 speakeasyService,
               ),
             ),

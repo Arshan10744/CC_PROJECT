@@ -1,13 +1,11 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository, UpdateResult } from 'typeorm';
 import { ICompanyRepository } from 'src/domain/repositories/company.interface';
 import { companies } from '../entities/comapny.entity';
 import { ICompany } from 'src/domain/models/company';
+import { plainToInstance } from 'class-transformer';
+import { CompanyPresenter } from 'src/infrastructure/presenter/company/company.presenter';
 
 @Injectable()
 export class CompanyRepository implements ICompanyRepository {
@@ -30,21 +28,12 @@ export class CompanyRepository implements ICompanyRepository {
     return this.companyRepository.update({ id }, payload);
   }
 
-  async getAll(): Promise<companies[]> {
-    return this.companyRepository.find({
-      relations: { organizations: true, users: true },
-      select: {
-        id: true,
-        name: true,
-        users: {
-          id: true,
-          username: true,
-        },
-        organizations: {
-          id: true,
-          name: true,
-        },
-      },
+  async getAll(): Promise<Partial<companies[]>> {
+    const companies = await this.companyRepository.find({
+      relations: ['organizations', 'users'],
+    });
+    return plainToInstance(CompanyPresenter, companies, {
+      excludeExtraneousValues: true,
     });
   }
 
@@ -60,35 +49,13 @@ export class CompanyRepository implements ICompanyRepository {
     pageNumber: number,
     pageSize: number,
   ): Promise<ICompany[]> {
-    try {
-      const companies = await this.companyRepository.find({
-        take: pageSize,
-        skip: (pageNumber - 1) * pageSize,
-        relations: { organizations: true, users: true },
-        select: {
-          organizations: {
-            id: true,
-            name: true,
-          },
-          users: {
-            id: true,
-            username: true,
-            role: true,
-            email: true,
-          },
-        },
-      });
-
-      if (companies.length === 0) {
-        throw new NotFoundException('No Companies found for the provided page');
-      }
-
-      return companies;
-    } catch (error) {
-      throw new InternalServerErrorException(
-        'Failed to fetch companies',
-        error.message,
-      );
-    }
+    const companies = await this.companyRepository.find({
+      take: pageSize,
+      skip: (pageNumber - 1) * pageSize,
+      relations: { organizations: true, users: true },
+    });
+    return plainToInstance(CompanyPresenter, companies, {
+      excludeExtraneousValues: true,
+    });
   }
 }

@@ -12,6 +12,7 @@ import { Jwt2faStrategy } from '../strategies/jwt2fa.stratgey';
 import { JwtStrategy } from '../strategies/jwt.strategy';
 import { AbilitiesGuard } from '../guard/casl/abilities.guard';
 import { CaslAbilityFactory } from '../services/ability.service';
+import { RepositoriesModule } from '../orm/repositories/repositories.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { CaslAbilityFactory } from '../services/ability.service';
         },
       }),
     }),
+    RepositoriesModule,
   ],
   controllers: [
     UserController,

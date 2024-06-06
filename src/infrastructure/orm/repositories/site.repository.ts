@@ -1,19 +1,26 @@
+import { UserPresenter } from 'src/infrastructure/presenter/user/user.presenter';
 import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteResult, Repository, UpdateResult } from 'typeorm';
+import { DeleteResult, In, Repository, UpdateResult } from 'typeorm';
 import { ISiteRepository } from 'src/domain/repositories/site.interface';
 import { sites } from '../entities/site.entity';
 import { ISite } from 'src/domain/models/site';
+import { plainToInstance } from 'class-transformer';
+import { SitePresenter } from 'src/infrastructure/presenter/site/site.presenter';
+import { users } from '../entities/user.entity';
+import { UserRepository } from './user.repository';
+import { OrganizationRepository } from './organization.repository';
 
 @Injectable()
 export class SiteRepository implements ISiteRepository {
   constructor(
     @InjectRepository(sites)
     private readonly siteRepository: Repository<sites>,
+    private readonly organizationRepository: OrganizationRepository,
   ) {}
 
   async create(payload: Partial<sites>): Promise<string> {
@@ -30,14 +37,29 @@ export class SiteRepository implements ISiteRepository {
     return this.siteRepository.update({ id }, payload);
   }
 
-  async getAll(): Promise<sites[]> {
-    return this.siteRepository.find({ relations: { organization: true } });
+  async getAll(payload: Partial<users>): Promise<sites[]> {
+    if (payload.role === 'admin') {
+      return this.siteRepository.find({ relations: { organization: true } });
+    }
+
+    const userOrganizations = await this.organizationRepository.getByUserId(
+      payload.id,
+    );
+    const organizationIds = userOrganizations.map(
+      (organization) => organization.id,
+    );
+
+    const sites = await this.siteRepository.find({
+      where: { organization: { id: In(organizationIds) } },
+    });
+
+    return sites;
   }
 
   async getAllByOrganizationId(id: string): Promise<ISite[]> {
     return this.siteRepository.find({
       where: {
-        organization: { id: id },
+        organization: { id },
       },
     });
   }
@@ -45,15 +67,10 @@ export class SiteRepository implements ISiteRepository {
   async getAllByCompanyId(id: string): Promise<ISite[]> {
     const sites = await this.siteRepository.find({
       relations: ['organization', 'organization.company'],
-      where: {
-        organization: {
-          company: {
-            id: id,
-          },
-        },
-      },
     });
-    return sites;
+    return plainToInstance(SitePresenter, sites, {
+      excludeExtraneousValues: true,
+    });
   }
 
   async getById(id: string): Promise<sites> {
@@ -64,29 +81,13 @@ export class SiteRepository implements ISiteRepository {
     pageNumber: number,
     pageSize: number,
   ): Promise<ISite[]> {
-    try {
-      const sites = await this.siteRepository.find({
-        take: pageSize,
-        skip: (pageNumber - 1) * pageSize,
-        relations: { organization: true },
-        select: {
-          organization: {
-            id: true,
-            name: true,
-          },
-        },
-      });
-
-      if (sites.length === 0) {
-        throw new NotFoundException('No sites found for the provided page');
-      }
-
-      return sites;
-    } catch (error) {
-      throw new InternalServerErrorException(
-        'Failed to fetch sites',
-        error.message,
-      );
-    }
+    const sites = await this.siteRepository.find({
+      take: pageSize,
+      skip: (pageNumber - 1) * pageSize,
+      relations: { organization: true },
+    });
+    return plainToInstance(SitePresenter, sites, {
+      excludeExtraneousValues: true,
+    });
   }
 }

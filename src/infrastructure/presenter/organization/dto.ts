@@ -1,25 +1,29 @@
-import { sites } from 'src/infrastructure/orm/entities/site.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, IsOptional, IsArray } from 'class-validator';
+import { PartialType } from '@nestjs/swagger';
 
 export class OrganizationDto {
   @IsString()
   @ApiProperty()
   @IsNotEmpty()
-  name: string;
+  readonly name: string;
 
   @IsArray()
   @IsOptional()
   @ApiProperty()
-  users?: string[];
+  readonly users?: string[];
 
   @IsArray()
   @IsOptional()
   @ApiProperty()
-  sites?: string[];
+  readonly sites?: string[];
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   @ApiProperty()
-  company?: string;
+  readonly company: string;
 }
+
+export class UpdateOrganizationDto extends PartialType(
+  OmitType(OrganizationDto, ['company'] as const),
+) {}

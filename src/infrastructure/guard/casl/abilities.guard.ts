@@ -22,8 +22,9 @@ export class AbilitiesGuard implements CanActivate {
       this.reflector.get<RequiredRule[]>(CHECK_ABILITY, context.getHandler()) ||
       [];
 
-    const { user } = context.switchToHttp().getRequest();
-    const ability = this.caslAbilityFactory.defineAbility(user);
+    const request = context.switchToHttp().getRequest();
+
+    const ability = await this.caslAbilityFactory.defineAbility(request);
 
     try {
       rules.every((rule) =>

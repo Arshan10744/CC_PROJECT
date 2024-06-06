@@ -6,8 +6,11 @@ export interface IUser {
   id: string;
   username: string;
   email: string;
-  password: string;
   role: UserRole;
-  company?: Partial<ICompany>;
+  company: Partial<Partial<ICompany>>;
   organizations?: Partial<IOrganization[]>;
+}
+
+export interface IUserWithPassword extends IUser {
+  password: string;
 }

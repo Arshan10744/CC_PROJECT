@@ -12,10 +12,10 @@ export class AuthDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsEmail()
-  email: string;
+  readonly email: string;
 
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
-  password: string;
+  readonly password: string;
 }

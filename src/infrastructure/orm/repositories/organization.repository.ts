@@ -1,3 +1,4 @@
+import { organizations } from 'src/infrastructure/orm/entities/organization.entity';
 import {
   Injectable,
   InternalServerErrorException,
@@ -6,7 +7,9 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository, UpdateResult } from 'typeorm';
 import { IOrganizationRepository } from 'src/domain/repositories/organization.interface';
-import { organizations } from '../entities/organization.entity';
+import { IOrganization } from 'src/domain/models/organization';
+import { plainToInstance } from 'class-transformer';
+import { OrganizationPresenter } from 'src/infrastructure/presenter/organization/organization.presenter';
 
 @Injectable()
 export class OrganizationRepository implements IOrganizationRepository {
@@ -16,8 +19,12 @@ export class OrganizationRepository implements IOrganizationRepository {
   ) {}
 
   async create(payload: Partial<organizations>): Promise<string> {
+    console.log('Repository Payload-----', payload);
     const organization = this.organizationRepository.create(payload);
-    await this.organizationRepository.save(organization);
+    console.log('Created Organization:---------------', organization);
+    const savedOrganization =
+      await this.organizationRepository.save(organization);
+    console.log('Saved Orgnization', savedOrganization);
     return 'organization Created Successfully';
   }
 
@@ -32,25 +39,17 @@ export class OrganizationRepository implements IOrganizationRepository {
     return this.organizationRepository.update({ id }, payload);
   }
 
-  async getAll(): Promise<organizations[]> {
-    return this.organizationRepository.find({
-      relations: { sites: true, company: true, users: true },
-      select: {
-        sites: {
-          id: true,
-          name: true,
-        },
-        company: {
-          id: true,
-          name: true,
-        },
+  async getAll(userId: string): Promise<Partial<IOrganization[]>> {
+    const organizations = await this.organizationRepository.find({
+      where: {
         users: {
-          id: true,
-          username: true,
-          role: true,
-          email: true,
+          id: userId,
         },
       },
+      relations: ['sites', 'company', 'users'],
+    });
+    return plainToInstance(OrganizationPresenter, organizations, {
+      excludeExtraneousValues: true,
     });
   }
 
@@ -59,48 +58,47 @@ export class OrganizationRepository implements IOrganizationRepository {
   }
 
   async getById(id: string): Promise<organizations> {
-    return this.organizationRepository.findOneBy({ id });
+    return this.organizationRepository.findOne({
+      where: { id },
+      relations: ['company'],
+    });
+  }
+
+  async getByCompanyId(id: string): Promise<organizations[]> {
+    return this.organizationRepository.find({
+      where: {
+        company: {
+          id: id,
+        },
+      },
+    });
+  }
+
+  async getByUserId(id: string): Promise<organizations[]> {
+    return this.organizationRepository.find({
+      where: {
+        users: { id },
+      },
+    });
+  }
+
+  async getBySiteId(id: string): Promise<IOrganization[]> {
+    return this.organizationRepository.find({
+      where: { sites: { id } },
+    });
   }
 
   async getPaginatedOrganizations(
     pageNumber: number,
     pageSize: number,
   ): Promise<organizations[]> {
-    try {
-      const organizations = await this.organizationRepository.find({
-        take: pageSize,
-        skip: (pageNumber - 1) * pageSize,
-        relations: { sites: true, company: true, users: true },
-        select: {
-          sites: {
-            id: true,
-            name: true,
-          },
-          company: {
-            id: true,
-            name: true,
-          },
-          users: {
-            id: true,
-            username: true,
-            role: true,
-            email: true,
-          },
-        },
-      });
-
-      if (organizations.length === 0) {
-        throw new NotFoundException(
-          'No organizations found for the provided page',
-        );
-      }
-
-      return organizations;
-    } catch (error) {
-      throw new InternalServerErrorException(
-        'Failed to fetch organizations',
-        error.message,
-      );
-    }
+    const organizations = await this.organizationRepository.find({
+      take: pageSize,
+      skip: (pageNumber - 1) * pageSize,
+      relations: { sites: true, company: true, users: true },
+    });
+    return plainToInstance(OrganizationPresenter, organizations, {
+      excludeExtraneousValues: true,
+    });
   }
 }

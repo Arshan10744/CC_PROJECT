@@ -1,21 +1,19 @@
-import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsString,
-  IsNotEmpty,
-  IsEnum,
-  IsOptional,
-  IsEmail,
-  IsArray,
-} from 'class-validator';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import { PartialType } from '@nestjs/swagger';
 
 export class SiteDto {
   @IsString()
   @ApiProperty()
   @IsNotEmpty()
-  name: string;
+  readonly name: string;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   @ApiProperty()
-  organization?: string;
+  readonly organization: string;
 }
+
+export class UpdateSiteDto extends PartialType(
+  OmitType(SiteDto, ['organization'] as const),
+) {}
